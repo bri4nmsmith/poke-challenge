@@ -1,0 +1,31 @@
+
+body{
+  font-size: 13px;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+header, form{
+  padding:15px
+}
+
+.container {
+  display: flex;
+  flex-wrap: wrap;
+
+}
+.pokes{
+  border:1px solid #333;
+  padding:10px;
+  flex:1;
+}
+li{
+  list-style: none;
+}
+.dropDown {
+	color: #313c7e;
+	font-size: 16px;
+	padding-right: 5px;
+}
+select {
+	margin-top: 10px;
+}
