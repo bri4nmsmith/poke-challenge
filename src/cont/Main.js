@@ -1,44 +1,36 @@
-import React from "react"
+import React, {useState,useEffect}from "react"
 import Content from "./Content"
 import Filter from './Filter.js'
 
-class Main extends  React.Component{
-    constructor(props) { 
-        super(props);
-        this.state = { 
-            data : [],
-            value: '',
-            filterdata: '',
-            name:'search', //default...
-            loading:false
-        };
-        this.handleChange = this.handleChange.bind(this)
-        this.handleFilter = this.handleFilter.bind(this)
-      }
+function Main (){
 
-    componentDidMount() {
-        this.setState({loading: true})
+    const [data,setData] = useState([]) 
+    const [value,setValue] = useState('')
+    const [filterData,setFilterData] = useState('')
+    const [name,setName] = useState('search')
+    const [type,setType] = useState('')
+    const [isLoading, setIsLoading] = useState(false) 
+
+    useEffect(()=>{
+        setIsLoading(true)
         fetch("https://raw.githubusercontent.com/Biuni/PokemonGO-Pokedex/master/pokedex.json")  
             .then(response => response.json())      
-            .then(data => {			
-                this.setState({
-                    loading: false,
-                    data: data.pokemon
-                })
+            .then(res => {	                	
+                setData(res.pokemon)
+                setIsLoading(false)		
             })
+    },[])     //run once on render
+
+    const handleChange =(e)=> {
+        setName(e.target.name)
+        setValue(e.target.value) 
     }
-    handleChange(e) {
-        this.setState({value:e.target.value, name:e.target.name})  
-    }
-    handleFilter(e) {
-        this.setState({
-            filterdata: Array.from(e.target.selectedOptions, option => option.value), 
-            name: e.target.name,
-            type: e.target.type
-        })  
+    const handleFilter =(e)=> {
+        setFilterData(Array.from(e.target.selectedOptions, option => option.value)) 
+        setName(e.target.name)
+        setType(e.target.type)
     }     
-    makeFilterList(type) {
-        const {data} = this.state 
+    const makeFilterList=(type)=> {
         let arr = []
         data.filter(obj => {
             obj[type].map((ty,key) => { // collect the filter criteria
@@ -48,8 +40,7 @@ class Main extends  React.Component{
         })
         return Array.from(new Set(arr));//remove the extras!
     }
-    buildResults(){
-        const {value, data, name,filterdata } = this.state //destruct the stuff
+    const buildResults =()=>{
         return data.map((poke,key) =>  {
             let v=value.toLowerCase(),n=poke.name.toLowerCase()                
             
@@ -60,9 +51,9 @@ class Main extends  React.Component{
            if(name ==="filter1" || name ==="filter2"){  //start crazy filters
                 
                 let ii = (name ==="filter1") ? poke.type : poke.weaknesses
-                let filterLen = filterdata.length
+                let filterLen = filterData.length
                 let isListed = ii.map((item,key)=>{
-                    let filters = filterdata.some((filter)=>{
+                    let filters = filterData.some((filter)=>{
                         if(filter === "0"){
                             return true
                         }
@@ -81,29 +72,37 @@ class Main extends  React.Component{
             return null  
         })
     }
-    render(){ 
         
-        const typeList = this.makeFilterList("type")
-        const weakList = this.makeFilterList("weaknesses")   
-        const content = this.buildResults()
-             
-        return (
-            <div>
-                <form>
-                    <input 
-                        name="search" 
-                        type="text"placeholder="Search on name..." 
-                        onChange={this.handleChange}>
-                    </input>
-                    <Filter name="filter1" type="Type :" list={typeList} onChange={this.handleFilter} />
-                    <Filter name="filter2" type="Weaknesses :" list={weakList} onChange={this.handleFilter} />
-                </form>
-                <div className="container">
-                    {content}
-                </div>
-
+    const typeList = makeFilterList("type")
+    const weakList = makeFilterList("weaknesses")   
+    const content = buildResults()
+            
+    return (
+        <div>
+            <form>
+                <input 
+                    name="search" 
+                    type="text"placeholder="Search on name..." 
+                    onChange={handleChange}>
+                </input>
+                <Filter 
+                    name="filter1" 
+                    type="Type :" 
+                    list={typeList} 
+                    onChange={handleFilter} 
+                />
+                <Filter 
+                    name="filter2" 
+                    type="Weaknesses :" 
+                    list={weakList} 
+                    onChange={handleFilter} 
+                />
+            </form>
+            <div className="container">
+                {content}
             </div>
-        )
-    }
+
+        </div>
+    )
 }
 export default Main
